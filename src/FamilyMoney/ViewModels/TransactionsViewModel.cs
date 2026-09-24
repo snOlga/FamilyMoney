@@ -7,7 +7,6 @@ using FamilyMoney.Messages;
 using FamilyMoney.Models;
 using FamilyMoney.State;
 using FamilyMoney.Utils;
-using FluentStorage.Utils.Extensions;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -88,7 +87,7 @@ public partial class TransactionsViewModel : ViewModelBase
 
         SubscribeMessages();
 
-        var transactionsFilter = new Func<BaseTransactionsGroupViewModel, bool>((t) =>
+        var transactionsFilter = new Func<BaseTransactionsGroupViewModel, bool>((t) => 
         {
             if (t is TransactionRowViewModel row)
             {
@@ -305,20 +304,6 @@ public partial class TransactionsViewModel : ViewModelBase
             viewModel.Sum = entity!.Sum;
             viewModel.Comment = entity.Comment;
 
-            viewModel.Tags.Clear();
-            if (entity.Tags != null)
-            {
-                entity.Tags
-                    .Where(t => !string.IsNullOrWhiteSpace(t))
-                    .ForEach(tag => viewModel.Tags.Add(tag.Trim()));
-            }
-
-            if (entity is TransferTransaction transfer)
-            {
-                viewModel.ToAccount = viewModel.FlatAccounts?.FirstOrDefault(a => a.Id == transfer.ToAccountId);
-                viewModel.ToSum = transfer.ToSum;
-            }
-
             return (entity, viewModel);
         });
 
@@ -340,9 +325,9 @@ public partial class TransactionsViewModel : ViewModelBase
         WeakReferenceMessenger.Default.Send(new TransactionChangedMessage(before, after));
     }
 
-    private BaseTransactionViewModel CreateNewTransaction<T>(IList<BaseCategoryViewModel> categories,
+    private BaseTransactionViewModel CreateNewTransaction<T>(IList<BaseCategoryViewModel> categories, 
                                                             IList<BaseSubCategoryViewModel> subCategories,
-                                                            BaseTransactionsGroupViewModel? byGroup)
+                                                            BaseTransactionsGroupViewModel? byGroup) 
         where T : BaseTransactionViewModel, new()
     {
         var state = _stateManager.GetMainState();
@@ -680,29 +665,29 @@ public partial class TransactionsViewModel : ViewModelBase
             TransactionRowViewModel? transactionView = null;
             if (transaction is DebetTransaction)
             {
-                transactionView = FillTransactions<DebetCategoryViewModel, DebetSubCategoryViewModel>(debetTransactionsTemp,
-                    transaction,
-                    selected,
+                transactionView = FillTransactions<DebetCategoryViewModel, DebetSubCategoryViewModel>(debetTransactionsTemp, 
+                    transaction, 
+                    selected, 
                     (_, _) => true);
                 lastDateGroup.Sum += transaction.Sum;
             }
             else if (transaction is CreditTransaction)
             {
-                transactionView = FillTransactions<CreditCategoryViewModel, CreditSubCategoryViewModel>(creditTransactionsTemp,
-                    transaction,
-                    selected,
+                transactionView = FillTransactions<CreditCategoryViewModel, CreditSubCategoryViewModel>(creditTransactionsTemp, 
+                    transaction, 
+                    selected, 
                     (_, _) => false);
                 lastDateGroup.Sum -= transaction.Sum;
             }
             else if (transaction is TransferTransaction transferTransaction)
             {
-                transactionView = FillTransactions<TransferCategoryViewModel, TransferSubCategoryViewModel>(transferTransactionsTemp,
+                transactionView = FillTransactions<TransferCategoryViewModel, TransferSubCategoryViewModel>(transferTransactionsTemp, 
                     transaction,
-                    selected,
+                    selected, 
                     (t, g) => g is TransactionRowViewModel && transaction is TransferTransaction transfer && transfer.ToAccountId == state.SelectedAccountId
                 );
-                lastDateGroup.Sum += state.SelectedAccountId.HasValue ?
-                    (state.SelectedAccountId == transferTransaction.AccountId ? -transferTransaction.Sum : transferTransaction.ToSum)
+                lastDateGroup.Sum += state.SelectedAccountId.HasValue ? 
+                    (state.SelectedAccountId == transferTransaction.AccountId ? -transferTransaction.Sum : transferTransaction.ToSum) 
                     : 0;
             }
 
@@ -726,14 +711,14 @@ public partial class TransactionsViewModel : ViewModelBase
         TransactionsDyDates.AddRange(transactionsDyDates.Take(_configuration.Get().Transactions.MaxTransactionsByDate));
     }
 
-    private TransactionRowViewModel FillTransactions<C, S>(SummaryTransactionsGroup summary,
+    private TransactionRowViewModel FillTransactions<C, S>(SummaryTransactionsGroup summary, 
             Transaction transaction,
-            BaseTransactionsGroupViewModel? selected,
+            BaseTransactionsGroupViewModel? selected, 
             Func<Transaction, BaseTransactionsGroupViewModel?, bool> isDebet)
-        where C : BaseCategoryViewModel, new() where S : BaseSubCategoryViewModel, new()
+        where C : BaseCategoryViewModel, new() where S : BaseSubCategoryViewModel, new() 
     {
         summary.Sum += transaction.Sum;
-        var category = summary.TryAddCategory(transaction.CategoryId.GetValueOrDefault(), () =>
+        var category = summary.TryAddCategory(transaction.CategoryId.GetValueOrDefault(), () => 
         {
             return transaction.CategoryId == null ? new CategoryTransactionsGroupViewModel { IsDebet = isDebet(transaction, null), Parent = this }
              : new CategoryTransactionsGroupViewModel
@@ -798,7 +783,7 @@ public partial class TransactionsViewModel : ViewModelBase
         return viewTransaction;
     }
 
-    private BaseCategoryViewModel GetCategory<C>(Guid id) where C : BaseCategoryViewModel, new()
+    private BaseCategoryViewModel GetCategory<C>(Guid id) where C: BaseCategoryViewModel, new()
     {
         lock (_listsCacheLock)
         {
@@ -870,7 +855,7 @@ public partial class TransactionsViewModel : ViewModelBase
     private List<BaseSubCategoryViewModel> GetSubCategories<T, N, C>()
         where T : SubCategory
         where N : BaseSubCategoryViewModel, new()
-        where C : BaseCategoryViewModel, new()
+        where C: BaseCategoryViewModel, new()
     {
         lock (_listsCacheLock)
         {
